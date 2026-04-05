@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>planning. — life dashboard</title>
+  <meta name="theme-color" content="#0c0c0e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css " />
+</head>
+<body>
+
+<div class="noise"></div>
+
+<!-- ── HEADER ── -->
+<header class="hdr">
+  <div class="hdr-left">
+    <a class="hdr-back" href="https://cl0s3s.github.io/life/" title="retour au dashboard">← life.</a>
+    <div class="hdr-logo">planning<span>.</span></div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-date" id="hdr-date"></div>
+    <button class="notif-btn" id="notif-btn" title="Activer les notifications 18h30">🔔</button>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+  <!-- ══ VUE PLANNING (affiché si planning existant) ══ -->
+  <section class="view-section" id="view-section" style="display:none">
+    <div class="view-header">
+      <div class="view-title" id="view-title">demain</div>
+      <button class="btn-edit" id="btn-edit">modifier</button>
+    </div>
+
+    <!-- stats bar -->
+    <div class="stats-bar" id="stats-bar"></div>
+
+    <!-- timeline -->
+    <div class="timeline-wrap">
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </section>
+
+  <!-- ══ FORMULAIRE ══ -->
+  <section class="form-section" id="form-section">
+
+    <div class="form-intro" data-anim data-delay="0">
+      <div class="form-intro-title">planifie ta journée</div>
+      <div class="form-intro-sub" id="form-date-label">pour demain</div>
+    </div>
+
+    <!-- Réveil -->
+    <div class="form-block" data-anim data-delay="60">
+      <div class="block-label">🌅 réveil</div>
+      <div class="block-row">
+        <input type="time" id="wake-time" value="07:30" />
+      </div>
+    </div>
+
+    <!-- Repas -->
+    <div class="form-block" data-anim data-delay="120">
+      <div class="block-label">🍽 repas</div>
+      <div class="meals-grid">
+        <div class="meal-item">
+          <span class="meal-lbl">petit-déj</span>
+          <input type="time" id="meal-breakfast" value="08:00" />
+          <span class="meal-dur-lbl">durée</span>
+          <select id="dur-breakfast">
+            <option value="15">15 min</option>
+            <option value="20">20 min</option>
+            <option value="30" selected>30 min</option>
+            <option value="45">45 min</option>
+          </select>
+        </div>
+        <div class="meal-item">
+          <span class="meal-lbl">déjeuner</span>
+          <input type="time" id="meal-lunch" value="12:30" />
+          <span class="meal-dur-lbl">durée</span>
+          <select id="dur-lunch">
+            <option value="30">30 min</option>
+            <option value="45">45 min</option>
+            <option value="60" selected>1h</option>
+            <option value="90">1h30</option>
+          </select>
+        </div>
+        <div class="meal-item">
+          <span class="meal-lbl">dîner</span>
+          <input type="time" id="meal-dinner" value="19:30" />
+          <span class="meal-dur-lbl">durée</span>
+          <select id="dur-dinner">
+            <option value="30">30 min</option>
+            <option value="45">45 min</option>
+            <option value="60" selected>1h</option>
+            <option value="90">1h30</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cours -->
+    <div class="form-block" data-anim data-delay="180">
+      <div class="block-label-row">
+        <div class="block-label">📚 cours</div>
+        <button class="btn-add" id="add-course-btn">+ ajouter</button>
+      </div>
+      <div class="courses-list" id="courses-list">
+        <!-- injected by JS -->
+      </div>
+      <div class="no-courses" id="no-courses">aucun cours — journée libre 🎉</div>
+    </div>
+
+    <!-- Coucher -->
+    <div class="form-block" data-anim data-delay="240">
+      <div class="block-label">🌙 coucher</div>
+      <div class="block-row">
+        <input type="time" id="sleep-time" value="23:00" />
+      </div>
+    </div>
+
+    <!-- Bouton générer -->
+    <div class="form-block" data-anim data-delay="300">
+      <button class="btn-generate" id="btn-generate">
+        <span>générer mon planning</span>
+        <span class="btn-arrow">→</span>
+      </button>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
