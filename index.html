@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css " />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
@@ -18,7 +18,7 @@
 <!-- ── HEADER ── -->
 <header class="hdr">
   <div class="hdr-left">
-    <a class="hdr-back" href="https://cl0s3s.github.io/life/" title="retour au dashboard">← life.</a>
+    <a class="hdr-back" href="https://cl0s3s.github.io/life-dashboard/" title="retour au dashboard">← life.</a>
     <div class="hdr-logo">planning<span>.</span></div>
   </div>
   <div class="hdr-right">
@@ -114,8 +114,39 @@
       <div class="no-courses" id="no-courses">aucun cours — journée libre 🎉</div>
     </div>
 
-    <!-- Coucher -->
+    <!-- Stream -->
     <div class="form-block" data-anim data-delay="240">
+      <div class="block-label-row">
+        <div class="block-label">🎙 stream</div>
+        <label class="stream-toggle-wrap">
+          <input type="checkbox" id="stream-enabled" />
+          <span class="stream-toggle-label">activer</span>
+        </label>
+      </div>
+      <div class="stream-fields" id="stream-fields" style="display:none">
+        <div class="stream-row">
+          <div class="stream-field">
+            <span class="meal-lbl">début</span>
+            <input type="time" id="stream-start" value="20:00" />
+          </div>
+          <div class="stream-field">
+            <span class="meal-lbl">durée</span>
+            <select id="stream-dur">
+              <option value="120">2h</option>
+              <option value="150">2h30</option>
+              <option value="180" selected>3h</option>
+              <option value="240">4h</option>
+              <option value="300">5h</option>
+              <option value="360">6h</option>
+            </select>
+          </div>
+        </div>
+        <div class="stream-info" id="stream-info"></div>
+      </div>
+    </div>
+
+    <!-- Coucher -->
+    <div class="form-block" data-anim data-delay="300">
       <div class="block-label">🌙 coucher</div>
       <div class="block-row">
         <input type="time" id="sleep-time" value="23:00" />
@@ -123,7 +154,7 @@
     </div>
 
     <!-- Bouton générer -->
-    <div class="form-block" data-anim data-delay="300">
+    <div class="form-block" data-anim data-delay="360">
       <button class="btn-generate" id="btn-generate">
         <span>générer mon planning</span>
         <span class="btn-arrow">→</span>
