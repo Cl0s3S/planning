@@ -16,6 +16,7 @@ const COLORS = {
   course:   '#f59e0b',
   revision: '#34d399',
   leisure:  '#a78bfa',
+  stream:   '#f472b6',
   sleep:    '#6b6a6f',
 };
 const LABELS = {
@@ -24,6 +25,7 @@ const LABELS = {
   course:   'cours',
   revision: 'révision',
   leisure:  'temps libre',
+  stream:   'stream 🎙',
   sleep:    'coucher',
 };
 
@@ -84,6 +86,45 @@ document.getElementById('hdr-date').textContent =
   NOW.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 document.getElementById('form-date-label').textContent =
   'pour ' + tomorrowLabel();
+
+/* ═══════════════════════════════════════════
+   STREAM TOGGLE
+═══════════════════════════════════════════ */
+const streamCheckbox = document.getElementById('stream-enabled');
+const streamFields   = document.getElementById('stream-fields');
+
+function updateStreamInfo() {
+  const infoEl  = document.getElementById('stream-info');
+  const start   = document.getElementById('stream-start').value;
+  const dur     = +document.getElementById('stream-dur').value;
+  const sleep   = document.getElementById('sleep-time').value;
+
+  if (!start || !sleep) return;
+
+  const startMin = toMin(start);
+  const endMin   = startMin + dur;
+  const sleepMin = toMin(sleep) <= startMin
+    ? toMin(sleep) + 24 * 60
+    : toMin(sleep);
+
+  const endStr = toTime(endMin % (24 * 60));
+
+  if (endMin > sleepMin) {
+    const over = endMin - sleepMin;
+    infoEl.innerHTML = `<span class="stream-warn">⚠ Le stream déborde de ${durLabel(over)} sur l'heure de coucher (${toTime(sleepMin % (24*60))}). Ajuste l'heure ou la durée.</span>`;
+  } else {
+    infoEl.innerHTML = `<span class="stream-ok">🎙 Stream de ${toTime(startMin)} à ${endStr} — ${durLabel(dur)}</span>`;
+  }
+}
+
+streamCheckbox.addEventListener('change', () => {
+  streamFields.style.display = streamCheckbox.checked ? 'flex' : 'none';
+  if (streamCheckbox.checked) updateStreamInfo();
+});
+
+document.getElementById('stream-start').addEventListener('change', updateStreamInfo);
+document.getElementById('stream-dur').addEventListener('change', updateStreamInfo);
+document.getElementById('sleep-time').addEventListener('change', updateStreamInfo);
 
 /* ═══════════════════════════════════════════
    GESTION DES COURS (formulaire dynamique)
@@ -149,11 +190,24 @@ function generatePlanning() {
   }).filter(c => c.start >= wakeMin && c.start < sleepMin)
     .map(c => ({ ...c, dur: c.end - c.start }));
 
+  /* ── Stream (optionnel) ── */
+  const streamEnabled = document.getElementById('stream-enabled').checked;
+  let streamBlock = null;
+  if (streamEnabled) {
+    const streamStart = toMin(document.getElementById('stream-start').value);
+    const streamDur   = +document.getElementById('stream-dur').value;
+    const streamEnd   = streamStart + streamDur;
+    if (streamStart >= wakeMin && streamStart < sleepMin) {
+      streamBlock = { type: 'stream', name: 'stream', start: streamStart, end: Math.min(streamEnd, sleepMin), dur: Math.min(streamDur, sleepMin - streamStart) };
+    }
+  }
+
   /* ── Construire la liste des blocs fixes ── */
   const fixed = [
     { type: 'wake',  name: 'réveil',   start: wakeMin,  end: wakeMin,  dur: 0 },
     ...meals,
     ...courses,
+    ...(streamBlock ? [streamBlock] : []),
     { type: 'sleep', name: 'coucher',  start: sleepMin, end: sleepMin, dur: 0 },
   ].sort((a, b) => a.start - b.start);
 
@@ -177,13 +231,15 @@ function generatePlanning() {
   const totalLeisure  = blocks.filter(b => b.type === 'leisure' ).reduce((a, b) => a + b.dur, 0);
   const totalCourse   = blocks.filter(b => b.type === 'course'  ).reduce((a, b) => a + b.dur, 0);
   const totalMeal     = blocks.filter(b => b.type === 'meal'    ).reduce((a, b) => a + b.dur, 0);
+  const totalStream   = blocks.filter(b => b.type === 'stream'  ).reduce((a, b) => a + b.dur, 0);
 
   /* ── Sauvegarder ── */
   const data = {
     date: tomorrowKey(),
     wakeTime, sleepTime,
+    streamEnabled,
     blocks,
-    stats: { totalRevision, totalLeisure, totalCourse, totalMeal },
+    stats: { totalRevision, totalLeisure, totalCourse, totalMeal, totalStream },
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
@@ -243,6 +299,7 @@ function renderView(data) {
     { color: COLORS.revision, val: durLabel(data.stats.totalRevision),  lbl: 'révision'  },
     { color: COLORS.leisure,  val: durLabel(data.stats.totalLeisure),   lbl: 'loisirs'   },
     { color: COLORS.meal,     val: durLabel(data.stats.totalMeal),      lbl: 'repas'     },
+    ...(data.stats.totalStream > 0 ? [{ color: COLORS.stream, val: durLabel(data.stats.totalStream), lbl: 'stream' }] : []),
   ];
   statsData.forEach(s => {
     const chip = document.createElement('div');
@@ -325,6 +382,21 @@ document.getElementById('btn-edit').addEventListener('click', () => {
       // Pré-remplir le formulaire avec les valeurs sauvegardées
       if (data.wakeTime)  document.getElementById('wake-time').value  = data.wakeTime;
       if (data.sleepTime) document.getElementById('sleep-time').value = data.sleepTime;
+      // Restaurer le stream si activé
+      if (data.streamEnabled) {
+        document.getElementById('stream-enabled').checked = true;
+        document.getElementById('stream-fields').style.display = 'flex';
+        const streamBlock = (data.blocks || []).find(b => b.type === 'stream');
+        if (streamBlock) {
+          document.getElementById('stream-start').value = toTime(streamBlock.start);
+          const durSel = document.getElementById('stream-dur');
+          const closest = [...durSel.options].reduce((best, opt) =>
+            Math.abs(+opt.value - streamBlock.dur) < Math.abs(+best.value - streamBlock.dur) ? opt : best
+          );
+          durSel.value = closest.value;
+        }
+        updateStreamInfo();
+      }
       // Afficher directement la vue
       renderView(data);
     }
